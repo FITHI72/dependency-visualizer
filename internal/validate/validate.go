@@ -70,8 +70,10 @@ func Version(v string) error {
 	if v == "latest" {
 		return nil
 	}
-	semver := regexp.MustCompile(`^[0-9]+\\.[0-9]+\\.[0-9]+(?:[-+][A-Za-z0-9.\\-]+)?$`)
-	if !semver.MatchString(v) {
+
+	// Проверяем формат версии по SemVer
+	matched, _ := regexp.MatchString(`^(\d+\.\d+\.\d+)([-+][A-Za-z0-9.-]+)?$`, v)
+	if !matched {
 		return fmt.Errorf("invalid --version: %s (expected semver like 1.2.3 or 'latest')", v)
 	}
 	return nil
