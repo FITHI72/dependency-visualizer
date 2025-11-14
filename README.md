@@ -132,3 +132,4 @@ go run . --name A --url repo.txt --mode test --version 1.0.0 --op order
 Вывод:
 ⚠ Обнаружен цикл в зависимостях: A B C
 
+
