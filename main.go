@@ -1,6 +1,8 @@
 package main
 
-import "dependency-visualizer/cmd"
+import (
+	"dependency-visualizer/cmd"
+)
 
 func main() {
 	cmd.Execute()

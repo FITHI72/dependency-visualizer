@@ -15,7 +15,7 @@ func All(cfg *config.Config) error {
 	if err := Name(cfg.Name); err != nil {
 		return err
 	}
-	if err := Repo(cfg.Repo); err != nil {
+	if err := Repo(cfg.Repo, cfg.TestMode); err != nil {
 		return err
 	}
 	if err := TestMode(cfg.TestMode); err != nil {
@@ -37,29 +37,37 @@ func Name(n string) error {
 	return nil
 }
 
-func Repo(r string) error {
+func Repo(r string, mode string) error {
 	if r == "" {
-		return errors.New("missing required parameter --repo")
+		return errors.New("missing required parameter --url")
 	}
-	u, err := url.Parse(r)
-	if err == nil && (u.Scheme == "http" || u.Scheme == "https" || u.Scheme == "git" || u.Scheme == "ssh") {
+
+	// Если тестовый режим — проверяем, что файл существует
+	if mode == "test" {
+		if _, err := os.Stat(r); err != nil {
+			if os.IsNotExist(err) {
+				return fmt.Errorf("test repo file does not exist: %s", r)
+			}
+			return fmt.Errorf("cannot access test repo file: %v", err)
+		}
 		return nil
 	}
-	if _, err := os.Stat(r); err != nil {
-		if os.IsNotExist(err) {
-			return fmt.Errorf("repo path does not exist: %s", r)
-		}
-		return fmt.Errorf("cannot access repo path: %v", err)
+
+	// Если удалённый режим — проверяем URL
+	u, err := url.Parse(r)
+	if err == nil && (u.Scheme == "http" || u.Scheme == "https") {
+		return nil
 	}
-	return nil
+
+	return fmt.Errorf("invalid repo URL: %s", r)
 }
 
 func TestMode(m string) error {
 	switch m {
-	case "off", "local", "remote":
+	case "off", "local", "remote", "test":
 		return nil
 	default:
-		return fmt.Errorf("invalid --test-mode: %s (allowed: off, local, remote)", m)
+		return fmt.Errorf("invalid --mode: %s (allowed: off, local, remote, test)", m)
 	}
 }
 
